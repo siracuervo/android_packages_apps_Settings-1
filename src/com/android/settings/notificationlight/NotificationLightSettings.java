@@ -71,6 +71,7 @@ public class NotificationLightSettings extends SettingsPreferenceFragment implem
     private static final String NOTIFICATION_LIGHT_PULSE_DEFAULT_LED_OFF = "notification_light_pulse_default_led_off";
     private static final String NOTIFICATION_LIGHT_PULSE_CUSTOM_ENABLE = "notification_light_pulse_custom_enable";
     private static final String NOTIFICATION_LIGHT_PULSE = "notification_light_pulse";
+    private static final String SCREEN_ON_NOTIFICATION_LED= "screen_on_notification_led";
     private static final String NOTIFICATION_LIGHT_PULSE_CALL_COLOR = "notification_light_pulse_call_color";
     private static final String NOTIFICATION_LIGHT_PULSE_CALL_LED_ON = "notification_light_pulse_call_led_on";
     private static final String NOTIFICATION_LIGHT_PULSE_CALL_LED_OFF = "notification_light_pulse_call_led_off";
@@ -78,6 +79,7 @@ public class NotificationLightSettings extends SettingsPreferenceFragment implem
     private static final String NOTIFICATION_LIGHT_PULSE_VMAIL_LED_ON = "notification_light_pulse_vmail_led_on";
     private static final String NOTIFICATION_LIGHT_PULSE_VMAIL_LED_OFF = "notification_light_pulse_vmail_led_off";
     private static final String PULSE_PREF = "pulse_enabled";
+    private static final String SCREENON_PREF = "screenon_enabled";
     private static final String DEFAULT_PREF = "default";
     private static final String CUSTOM_PREF = "custom_enabled";
     private static final String MISSED_CALL_PREF = "missed_call";
@@ -90,12 +92,14 @@ public class NotificationLightSettings extends SettingsPreferenceFragment implem
     private int mDefaultLedOn;
     private int mDefaultLedOff;
     private PackageManager mPackageManager;
+    private boolean mScreenOnEnabled;
     private PreferenceGroup mApplicationPrefList;
     private CheckBoxPreference mEnabledPref;
     private CheckBoxPreference mCustomEnabledPref;
     private ApplicationLightPreference mDefaultPref;
     private ApplicationLightPreference mCallPref;
     private ApplicationLightPreference mVoicemailPref;
+    private CheckBoxPreference mScreenOnEnabledPref;
     private Menu mMenu;
     private PackageAdapter mPackageAdapter;
     private String mPackageList;
@@ -194,8 +198,12 @@ public class NotificationLightSettings extends SettingsPreferenceFragment implem
                 NOTIFICATION_LIGHT_PULSE_DEFAULT_LED_ON, mDefaultLedOn);
         int timeOff = Settings.System.getInt(resolver,
                 NOTIFICATION_LIGHT_PULSE_DEFAULT_LED_OFF, mDefaultLedOff);
-
+        int ScreenOnEnabled = Settings.System.getInt(resolver,        
+                SCREEN_ON_NOTIFICATION_LED, mScreenOnEnabled);
+       
         mDefaultPref.setAllValues(color, timeOn, timeOff);
+
+
 
         // Get Missed call and Voicemail values
         if (mCallPref != null) {
@@ -207,6 +215,59 @@ public class NotificationLightSettings extends SettingsPreferenceFragment implem
                     NOTIFICATION_LIGHT_PULSE_CALL_LED_OFF, mDefaultLedOff);
 
             mCallPref.setAllValues(callColor, callTimeOn, callTimeOff);
+        int color = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_DEFAULT_COLOR, mDefaultColor);
+        int timeOn = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_DEFAULT_LED_ON, mDefaultLedOn);
+        int timeOff = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_DEFAULT_LED_OFF, mDefaultLedOff);
+        mLightEnabled = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE, 0) == 1;
+        mCustomEnabled = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_CUSTOM_ENABLE, 0) == 1;
+        mScreenOnEnabled = Settings.System.getInt(
+            resolver, SCREEN_ON_NOTIFICATION_LED, 0) == 1;
+
+        // Get Missed call and Voicemail values
+        int callColor = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_CALL_COLOR, mDefaultColor);
+        int callTimeOn = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_CALL_LED_ON, mDefaultLedOn);
+        int callTimeOff = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_CALL_LED_OFF, mDefaultLedOff);
+        int vmailColor = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_VMAIL_COLOR, mDefaultColor);
+        int vmailTimeOn = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_VMAIL_LED_ON, mDefaultLedOn);
+        int vmailTimeOff = Settings.System.getInt(
+            resolver, NOTIFICATION_LIGHT_PULSE_VMAIL_LED_OFF, mDefaultLedOff);
+
+        PreferenceScreen prefSet = getPreferenceScreen();
+        PreferenceGroup generalPrefs = (PreferenceGroup) prefSet.findPreference("general_section");
+        if (generalPrefs != null) {
+
+            // Pulse preference
+            CheckBoxPreference cPref = (CheckBoxPreference) prefSet.findPreference(PULSE_PREF);
+            cPref.setChecked(mLightEnabled);
+            cPref.setOnPreferenceChangeListener(this);
+
+            // Default preference
+            mDefaultPref = (ApplicationLightPreference) prefSet.findPreference(DEFAULT_PREF);
+            mDefaultPref.setAllValues(color, timeOn, timeOff);
+            mDefaultPref.setEnabled(mLightEnabled);
+            mDefaultPref.setOnPreferenceChangeListener(this);
+
+            // Custom enabled preference
+            mCustomEnabledPref = (CheckBoxPreference) prefSet.findPreference(CUSTOM_PREF);
+            mCustomEnabledPref.setChecked(mCustomEnabled);
+            mCustomEnabledPref.setEnabled(mLightEnabled);
+            mCustomEnabledPref.setOnPreferenceChangeListener(this);
+
+            // ScreenOn enabled preference
+            mScreenOnEnabledPref = (CheckBoxPreference) prefSet.findPreference(SCREENON_PREF);
+            mScreenOnEnabledPref.setChecked(mScreenOnEnabled);
+            mScreenOnEnabledPref.setEnabled(mLightEnabled);
+            mScreenOnEnabledPref.setOnPreferenceChangeListener(this);
         }
 
         if (mVoicemailPref != null) {
@@ -378,8 +439,31 @@ public class NotificationLightSettings extends SettingsPreferenceFragment implem
     }
 
     public boolean onPreferenceChange(Preference preference, Object objValue) {
+<<<<<<< HEAD:src/com/android/settings/notificationlight/NotificationLightSettings.java
         if (preference == mEnabledPref || preference == mCustomEnabledPref) {
             getActivity().invalidateOptionsMenu();
+=======
+        String key = preference.getKey();
+
+        if (PULSE_PREF.equals(key)) {
+            mLightEnabled = (Boolean) objValue;
+            Settings.System.putInt(getContentResolver(), Settings.System.NOTIFICATION_LIGHT_PULSE,
+                    mLightEnabled ? 1 : 0);
+            mDefaultPref.setEnabled(mLightEnabled);
+            mCustomEnabledPref.setEnabled(mLightEnabled);
+            mScreenOnEnabledPref.setEnabled(mLightEnabled);
+            setCustomEnabled();
+        } else if (CUSTOM_PREF.equals(key)) {
+            mCustomEnabled = (Boolean) objValue;
+            Settings.System.putInt(getContentResolver(), NOTIFICATION_LIGHT_PULSE_CUSTOM_ENABLE,
+                    mCustomEnabled ? 1 : 0);
+            setCustomEnabled();
+        } else if (SCREENON_PREF.equals(key)) {
+            mScreenOnEnabled = (Boolean) objValue;
+            Settings.System.putInt(getContentResolver(), SCREEN_ON_NOTIFICATION_LED,
+                    mScreenOnEnabled ? 1 : 0);
+            setCustomEnabled();
+>>>>>>> 0ec4067... Option to enable Notification Light when screen is on (2/2):src/com/android/settings/mahdi/notificationlight/NotificationLightSettings.java
         } else {
             ApplicationLightPreference lightPref = (ApplicationLightPreference) preference;
             updateValues(lightPref.getKey(), lightPref.getColor(),

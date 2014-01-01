@@ -24,6 +24,11 @@
         <com.android.settings.cyanogenmod.SystemSettingCheckBoxPreference
             android:key="notification_light_pulse"
             android:title="@string/notification_pulse_title" />
+            
+        <com.android.settings.cyanogenmod.SystemSettingCheckBoxPreference
+            android:key="screenon_enabled"
+            android:title="@string/notification_light_screenon_title"
+            android:defaultValue="false" />
 
         <com.android.settings.notificationlight.ApplicationLightPreference
             android:key="default"
