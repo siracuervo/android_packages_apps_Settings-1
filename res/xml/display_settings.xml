@@ -116,6 +116,4 @@
                 android:summary="@string/screen_on_notification_led_summary"
                 android:defaultValue="true" />
 
-     </PreferenceCategory>
-
 </PreferenceScreen>
