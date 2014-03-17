@@ -51,7 +51,7 @@ public class LightsAndWarnings extends SettingsPreferenceFragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        addPreferencesFromResource(R.xml.display_settings);
+        addPreferencesFromResource(R.xml.lights_and_warnings);
 
 	// Low battery warning
         mLowBatteryWarning = (ListPreference) findPreference(KEY_LOW_BATTERY_WARNING_POLICY);
